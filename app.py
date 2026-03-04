@@ -59,11 +59,21 @@ def init_database(drop):
 from sqlalchemy import select, func
 
 
+@app.context_processor
+def inject_user():  # 函数名可以随意修改
+    user = db.session.execute(select(User)).scalar()
+    return dict(user=user)  # 需要返回字典，等同于 return {'user': user}
+
+
+@app.errorhandler(404)
+def page_not_found(error):
+    return render_template("404.html"), 404
+
+
 @app.route("/")
 def index():
-    user = db.session.execute(select(User)).scalar()  # 读取用户记录
-    movies = db.session.execute(select(Movie)).scalars().all()  # 读取所有电影记录
-    return render_template("index.html", user=user, movies=movies)
+    movies = db.session.execute(select(Movie)).scalars().all()
+    return render_template("index.html", movies=movies)
 
 
 @app.route("/test")
